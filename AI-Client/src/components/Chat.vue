@@ -5,20 +5,24 @@ import request from '../utils/request'
 const keyword = ref('')
 
 const handleSend = () => {
-  if(requestStatus.value === 1) return 
-  console.log(keyword.value)
+  isLoading.value = true
   request.get('/chat', {
     params: {
       keyword: keyword.value
     }
   }).then(res => {
-    console.log(res)
+    requestTimes.value += 1
+    isLoading.value = false
+    messageList.value.push(res.data)
+  }).catch(()=> {
+    isLoading.value = false
   })
 }
 
 const messageList = ref([]) // 请求消息列表
-const requestStatus = ref(0) // 请求状态 0:未请求 1:请求中 2:请求成功 3:请求失败
 const requestTimes = ref(0) // 请求次数
+
+const isLoading = ref(false)
 </script>
 
 <template>
@@ -31,7 +35,7 @@ const requestTimes = ref(0) // 请求次数
     </el-input>
     
   </div>
-  <div>
+  <div v-loading="isLoading">
     <p v-for="(item, index) in messageList" :key="index">
       {{ item }}
     </p>

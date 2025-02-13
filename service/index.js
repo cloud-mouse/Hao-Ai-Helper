@@ -9,21 +9,26 @@ app.use(cors());
 
 const ollama = new Ollama({
   baseUrl: 'http://127.0.0.1:11434',
-  model: 'deepseek-r1:32b'
+  model: 'deepseek-r1:1.5b'
 })
 
 // 这个接口 接受一个字符串
 app.get('/chat', async(req, res) => {
-  // 获取字符串
-  const { keyword } = req.query
-  // 调用函数
-  const result = keyword?.split('').reverse().join('') || '请输入'
-  const stream = await ollama.stream(result)
-  const chunks = [];
-  for await (const chunk of stream) {
-    chunks.push(chunk);
+  try {
+    // 获取字符串
+    const { keyword } = req.query
+    console.log(keyword);
+    if(!keyword) return res.status(400).send({ message: '请输入关键词' })
+    // 调用函数
+    const stream = await ollama.stream(keyword)
+    const chunks = [];
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+    res.status(200).send(JSON.stringify(chunks))
+  } catch (error) {
+    res.status(500).send(error.message)
   }
-  res.send(chunks.join(""))
 })
 
 app.get('/', (req, res) => {
